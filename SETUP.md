@@ -42,13 +42,15 @@ Repos:
 
 ---
 
-## B. Resend account + domain verification  (~5 min)
+## B. Brevo account + domain verification  (~5 min)
 
-1. Sign up at https://resend.com (free tier: 3K emails/mo — fine for Phase A).
-2. Domains -> **Add Domain** -> `gr8gray.dev`. Resend returns 4 DNS records (MX, TXT-SPF, TXT-DKIM, TXT-DMARC).
-3. Cloudflare Dashboard -> DNS -> Records -> **Add record** for each one. Copy values verbatim.
-4. Back in Resend, click **Verify**. Usually green within 5 min.
-5. API Keys -> **Create API Key** (full access, name it `gr8gray-forms`). Save the `re_...` value — this is `RESEND_API_KEY`.
+> If you previously used Resend on bayoucharity.org, the free tier capped you at one domain — Brevo replaces it here without the multi-domain upcharge.
+
+1. Sign up at https://brevo.com (free tier: 300 emails/day, unlimited domains).
+2. Senders & IP -> Domains -> **Add a domain** -> enter `gr8gray.dev`.
+3. Brevo returns DNS records: typically 1 DKIM (TXT named `mail._domainkey`), 1 Brevo verification (TXT at root or a subdomain), and a DMARC record suggestion. Paste each into Cloudflare DNS for the `gr8gray.dev` zone.
+4. Click **Verify** in Brevo. Usually verifies within 5 minutes.
+5. SMTP & API -> API Keys -> **Generate a new API key** (give it a clear name like `gr8gray-forms worker`). Save it — this is `BREVO_API_KEY`.
 
 ---
 
@@ -71,10 +73,10 @@ cd C:\Users\EricG\Documents\gr8gray-forms
 npx wrangler kv namespace create FORM_LOG
 # Copy the returned `id = "..."` into wrangler.toml, replacing REPLACE_WITH_KV_ID.
 
-npx wrangler secret put RESEND_API_KEY        # paste re_... from step B
+npx wrangler secret put BREVO_API_KEY         # paste xkeysib-... from step B
 npx wrangler secret put TURNSTILE_SECRET_KEY  # paste from step C
 npx wrangler secret put NOTIFY_TO             # your destination email (e.g. ericgray928@live.com)
-npx wrangler secret put NOTIFY_FROM           # noreply@gr8gray.dev  (must be on the verified Resend domain)
+npx wrangler secret put NOTIFY_FROM           # noreply@gr8gray.dev  (must be on the verified Brevo domain)
 ```
 
 > The local `wrangler` is logged in with read-only OAuth scopes for now.
