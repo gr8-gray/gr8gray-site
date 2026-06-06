@@ -1,0 +1,103 @@
+---
+const busts = [
+  { slug: "pythagoras", name: "Pythagoras", src: "/pantheon/pythagoras.png" },
+  { slug: "athena", name: "Athena", src: "/pantheon/athena.png" },
+  { slug: "plato", name: "Plato", src: "/pantheon/plato.png" },
+  { slug: "hephaestus", name: "Hephaestus", src: "/pantheon/hephaestus.png" },
+];
+---
+
+<div class="bust-bg" id="bustBg">
+  {busts.map((b) => (
+    b.src ? (
+      <div class="bust-fig" data-figure={b.slug}>
+        <img src={b.src} alt="" aria-hidden="true" draggable="false" class="bust-img" loading="eager" />
+        <div class="bust-name">{b.name}</div>
+      </div>
+    ) : (
+      <div class="bust-fig" data-figure={b.slug} data-placeholder="true">
+        <div class="niche"></div>
+        <div class="shoulders"></div>
+        <div class="head"></div>
+        <div class="bust-name">{b.name}</div>
+      </div>
+    )
+  ))}
+</div>
+
+<script is:inline>
+  (function () {
+    var bustBg = document.getElementById("bustBg");
+    if (!bustBg) return;
+    var classes = ["show-pythagoras", "show-athena", "show-plato", "show-hephaestus"];
+    var body = document.body;
+
+    function getBlocks() {
+      return document.querySelectorAll(".figure-block");
+    }
+
+    function clearShow() {
+      for (var i = 0; i < classes.length; i++) bustBg.classList.remove(classes[i]);
+    }
+
+    var ticking = false;
+    function update() {
+      var vh = window.innerHeight;
+      var center = vh / 2;
+      var blocks = getBlocks();
+      var bestSlug = null;
+      var bestDist = Infinity;
+      var anyNear = false;
+
+      for (var i = 0; i < blocks.length; i++) {
+        var b = blocks[i];
+        var r = b.getBoundingClientRect();
+        // block must actually intersect the viewport
+        if (r.bottom <= 0 || r.top >= vh) continue;
+        var bc = (r.top + r.bottom) / 2;
+        var dist = Math.abs(bc - center);
+        anyNear = true;
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestSlug = b.getAttribute("data-figure");
+        }
+      }
+
+      if (anyNear && bestSlug) {
+        var target = "show-" + bestSlug;
+        if (!bustBg.classList.contains(target)) {
+          clearShow();
+          bustBg.classList.add(target);
+        }
+        if (!body.classList.contains("pantheon-active")) body.classList.add("pantheon-active");
+      } else {
+        clearShow();
+        body.classList.remove("pantheon-active");
+      }
+
+      // parallax
+      var y = window.scrollY || window.pageYOffset;
+      bustBg.style.transform = "translateY(" + (y * -0.05) + "px)";
+    }
+
+    function onScroll() {
+      if (!ticking) {
+        window.requestAnimationFrame(function () {
+          update();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    // initial pass after layout settles
+    if (document.readyState === "complete") {
+      update();
+    } else {
+      window.addEventListener("load", update);
+      update();
+    }
+  })();
+</script>

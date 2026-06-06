@@ -1,0 +1,86 @@
+---
+const figures = [
+  {
+    id: "figure-pythagoras",
+    figure: "pythagoras",
+    index: "01 / 04",
+    discipline: "CODE & ARCHITECTURE",
+    quote: "Number is the ruler of forms and ideas.",
+    head: "Production engineering.",
+    items: [
+      "Production sites in Astro / Next.js / Shopify",
+      "Type-safe end to end (TypeScript, Zod schemas)",
+      "Clean data models — auth, payments, content",
+      "Sovereign-stack preference (Cloudflare, no vendor lock)",
+      "Performance budgets enforced (LCP < 2.5s, no jank)",
+    ],
+  },
+  {
+    id: "figure-athena",
+    figure: "athena",
+    index: "02 / 04",
+    discipline: "DISCOVERY & SCOPING",
+    quote: "Wisdom begins in wonder.",
+    head: "Scope before code.",
+    items: [
+      "6-question teaser → 45-min discovery call → fixed quote",
+      "Acceptance criteria locked before any code",
+      'Honest "no" when a no-code tool fits better',
+      "Explicit out-of-scope list in every SOW",
+      "One decision-maker, one approval chain",
+    ],
+  },
+  {
+    id: "figure-plato",
+    figure: "plato",
+    index: "03 / 04",
+    discipline: "STANDARDS & ACCESSIBILITY",
+    quote: "The first and greatest victory is to conquer yourself.",
+    head: "Discipline by default.",
+    items: [
+      "WCAG 2.2 AA baseline, Section 508 when gov-adjacent",
+      "Semantic HTML, keyboard paths, ARIA only where earned",
+      "Lighthouse a11y / SEO / best-practices ≥ 95",
+      "Privacy-first analytics (Plausible default)",
+      "DKIM/SPF/DMARC on every transactional sender",
+    ],
+  },
+  {
+    id: "figure-hephaestus",
+    figure: "hephaestus",
+    index: "04 / 04",
+    discipline: "SHIPPING & HANDOFF",
+    quote: "The forge does not ask what it builds — only that it builds well.",
+    head: "Ship and hand over clean.",
+    items: [
+      "Two-week typical from kickoff to live URL",
+      "Code in YOUR GitHub from day one — you own it",
+      "Deploy pipeline documented in the repo README",
+      "Domain, DNS, analytics, email — zero-downtime switch",
+      "14-day post-launch fix window included",
+    ],
+  },
+];
+---
+
+<section id="pantheon" class="long">
+  <div class="wrap">
+    <div class="pantheon-intro">
+      <div class="eyebrow">02<span class="sep">·</span>PRODUCT ENGINEERING</div>
+      <h2>Personal firmware.</h2>
+      <div class="meta">Four disciplines. One operator. Same firmware on every project.</div>
+    </div>
+
+    {figures.map((f) => (
+      <div class="figure-block" id={f.id} data-figure={f.figure}>
+        <div class="fig-meta-row">
+          <span>{f.index}</span><span class="dot">·</span><span>{f.discipline}</span>
+        </div>
+        <div class="fig-quote">"{f.quote}"</div>
+        <ul class="fig-list">
+          {f.items.map((li) => <li>{li}</li>)}
+        </ul>
+      </div>
+    ))}
+  </div>
+</section>
