@@ -1,0 +1,56 @@
+---
+import { about } from "../data/about";
+
+const steps = [
+  {
+    num: "01",
+    title: "Teaser",
+    body: "Six-question intake form. Tells me budget, deadline, success metric. Reply within 24 hours with a yes-let's-talk or a clean referral.",
+  },
+  {
+    num: "02",
+    title: "Discovery",
+    body: "45-minute call. We walk the requirements, name acceptance criteria, identify what's out-of-scope. Honest \"no\" if no-code fits better.",
+  },
+  {
+    num: "03",
+    title: "SOW",
+    body: "Written scope, fixed price, milestones, ownership terms. One decision-maker. You sign before any code is written.",
+  },
+  {
+    num: "04",
+    title: "Build",
+    body: "Two-week typical. Weekly checkpoint. Code lands in YOUR GitHub from day one. Pause-anytime clause — your slot picks back up.",
+  },
+  {
+    num: "05",
+    title: "Launch",
+    body: "Domain, DNS, analytics, email switched cleanly. README documents the deploy pipeline. 14-day post-launch fix window included.",
+  },
+];
+---
+
+<section id="how" class="long">
+  <div class="wrap">
+    <div class="eyebrow">03<span class="sep">·</span>HOW I WORK</div>
+    <h2>Process — five steps, no surprises.</h2>
+
+    <div class="how-prose">
+      {about.paragraphs.slice(1).map((p) => <p>{p}</p>)}
+    </div>
+
+    <div class="steps">
+      {steps.map((s) => (
+        <div class="step">
+          <div class="num">{s.num}</div>
+          <h4>{s.title}</h4>
+          <p>{s.body}</p>
+        </div>
+      ))}
+    </div>
+
+    <div class="ai-note">
+      Claude Code is in the loop as a force multiplier. The judgment is mine; the speed is augmented.
+    </div>
+  </div>
+</section>

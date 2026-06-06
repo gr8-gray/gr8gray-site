@@ -1,0 +1,105 @@
+---
+const formsOrigin =
+  import.meta.env.PUBLIC_FORMS_ORIGIN ?? "https://forms.gr8gray.dev";
+const formEndpoint = `${formsOrigin}/teaser`;
+const turnstileSiteKey =
+  import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "1x00000000000000000000AA";
+---
+
+<section id="contact" class="long">
+  <div class="wrap">
+    <div class="eyebrow">04<span class="sep">·</span>CONTACT</div>
+    <h2>Start a project.</h2>
+
+    <form id="teaser-form" class="form" action={formEndpoint} method="POST">
+      <div class="field">
+        <label for="name_email">NAME + EMAIL</label>
+        <input id="name_email" name="name_email" type="text" required maxlength="200" placeholder="Eric Gray · eric@example.com" />
+      </div>
+      <div class="field">
+        <label for="one_liner">PROJECT — ONE LINER</label>
+        <input id="one_liner" name="one_liner" type="text" required maxlength="500" placeholder="What are you building, in one sentence." />
+      </div>
+
+      <div class="field full">
+        <label for="success_metric">SUCCESS METRIC IN 90 DAYS</label>
+        <textarea id="success_metric" name="success_metric" required maxlength="500" placeholder="What does the site need to have done by then."></textarea>
+      </div>
+
+      <div class="field">
+        <label for="deadline">TIMELINE</label>
+        <select id="deadline" name="deadline" required>
+          <option value="">Choose one</option>
+          <option value="hard">Hard date</option>
+          <option value="soft">Soft target</option>
+          <option value="flexible">Flexible</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="budget">BUDGET</label>
+        <select id="budget" name="budget" required>
+          <option value="">Choose one</option>
+          <option value="lt2k">&lt; $2.5K</option>
+          <option value="2to5k">$2.5K – $5K</option>
+          <option value="5to10k">$5K – $10K</option>
+          <option value="10to25k">$10K – $25K</option>
+          <option value="gt25k">$25K+</option>
+          <option value="unsure">Not sure</option>
+        </select>
+      </div>
+
+      <div class="field full">
+        <label for="examples">EXAMPLES — SITES YOU LIKE</label>
+        <textarea id="examples" name="examples" required maxlength="1000" placeholder="Links or names. Anything that shows the tone."></textarea>
+      </div>
+
+      <div class="full">
+        <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="dark"></div>
+      </div>
+
+      <div class="submit-row">
+        <span class="reply">Available · Reply within 24 hours.</span>
+        <button class="btn" type="submit">SUBMIT <span class="arr">→</span></button>
+      </div>
+
+      <p id="form-status" class="form-status"></p>
+    </form>
+  </div>
+</section>
+
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<script>
+  const form = document.getElementById("teaser-form") as HTMLFormElement | null;
+  const status = document.getElementById("form-status");
+  if (form && status) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      status.textContent = "SENDING…";
+      status.className = "form-status";
+      const data = Object.fromEntries(new FormData(form).entries());
+      try {
+        const r = await fetch(form.action, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        if (r.ok) {
+          status.textContent = "RECEIVED · REPLY WITHIN 24 HOURS";
+          status.className = "form-status ok";
+          form.reset();
+        } else {
+          const body = await r.text();
+          status.textContent = `ERROR ${r.status} · EMAIL ERIC@GR8GRAY.DEV`;
+          status.className = "form-status err";
+          console.error(body);
+        }
+      } catch (err) {
+        status.textContent = "NETWORK ERROR · EMAIL ERIC@GR8GRAY.DEV";
+        status.className = "form-status err";
+        console.error(err);
+      }
+    });
+  }
+</script>

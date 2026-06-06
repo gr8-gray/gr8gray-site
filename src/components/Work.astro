@@ -1,0 +1,159 @@
+---
+import { portfolio } from "../data/portfolio";
+
+const pad = (n: number) => n.toString().padStart(2, "0");
+const domain = (url: string) => url.replace(/^https?:\/\//, "").replace(/\/$/, "");
+const stackTag = (stack: string) => stack.replace(/\.$/, "").toUpperCase();
+const total = portfolio.length;
+---
+
+<section id="work" class="long">
+  <div class="wrap">
+    <div class="sechead">
+      <div>
+        <div class="eyebrow">01<span class="sep">·</span>WORK</div>
+        <h2>Recent builds.</h2>
+      </div>
+      <div class="counter">{pad(total)} PROJECTS</div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="stage" id="workStage">
+        <button type="button" class="stage-chev stage-chev-prev" id="workPrev" aria-label="Previous project">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button type="button" class="stage-chev stage-chev-next" id="workNext" aria-label="Next project">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+
+        <div class="stage-frame" id="workFrame">
+          {portfolio.map((p, i) => (
+            <div
+              class={`stage-slide${i === 0 ? " is-active" : ""}`}
+              data-index={i}
+              data-name={p.name}
+              data-stack={stackTag(p.stack)}
+              data-blurb={p.blurb}
+              data-url={p.url}
+              data-domain={domain(p.url)}
+            >
+              <div class="stage-img" data-tag={`IMG · ${domain(p.url)}`}>
+                {p.image && (
+                  <img
+                    src={p.image}
+                    alt={p.imageAlt ?? `${p.name} homepage screenshot`}
+                    loading={i === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                  />
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div class="stage-info">
+        <div class="stage-eyebrow" id="workEyebrow">{`01 / ${pad(total)} · LIVE`}</div>
+        <h3 class="stage-name" id="workName">{portfolio[0].name}</h3>
+        <div class="stage-stack" id="workStack">{stackTag(portfolio[0].stack)}</div>
+        <p class="stage-blurb" id="workBlurb">{portfolio[0].blurb}</p>
+        <a class="stage-visit" id="workVisit" href={portfolio[0].url} target="_blank" rel="noopener noreferrer">
+          <span id="workVisitText">{`Visit ${domain(portfolio[0].url)}`}</span> <span class="arrow">&rarr;</span>
+        </a>
+      </div>
+
+      <div class="stage-dots" id="workDots">
+        {portfolio.map((_, i) => (
+          <button
+            type="button"
+            class={`stage-dot${i === 0 ? " is-active" : ""}`}
+            data-index={i}
+            aria-label={`Go to project ${pad(i + 1)}`}
+          ></button>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  (() => {
+    const stage = document.getElementById("workStage");
+    const frame = document.getElementById("workFrame");
+    const prev = document.getElementById("workPrev") as HTMLButtonElement | null;
+    const next = document.getElementById("workNext") as HTMLButtonElement | null;
+    const dotsWrap = document.getElementById("workDots");
+    const nameEl = document.getElementById("workName");
+    const stackEl = document.getElementById("workStack");
+    const blurbEl = document.getElementById("workBlurb");
+    const visitEl = document.getElementById("workVisit") as HTMLAnchorElement | null;
+    const visitTextEl = document.getElementById("workVisitText");
+    const eyebrowEl = document.getElementById("workEyebrow");
+    if (!stage || !frame || !prev || !next || !dotsWrap || !nameEl || !stackEl || !blurbEl || !visitEl || !visitTextEl || !eyebrowEl) return;
+
+    const slides = Array.from(frame.querySelectorAll<HTMLElement>(".stage-slide"));
+    const dots = Array.from(dotsWrap.querySelectorAll<HTMLButtonElement>(".stage-dot"));
+    const total = slides.length;
+    const pad = (n: number) => n.toString().padStart(2, "0");
+
+    let activeIndex = 0;
+    let lastDir = 1;
+
+    const render = (idx: number, dir: number) => {
+      slides.forEach((s, i) => {
+        s.classList.remove("is-active", "enter-from-right", "enter-from-left");
+        if (i === idx) {
+          if (dir !== 0) {
+            s.classList.add(dir > 0 ? "enter-from-right" : "enter-from-left");
+            // force reflow to restart transition
+            void s.offsetWidth;
+          }
+          s.classList.add("is-active");
+        }
+      });
+      dots.forEach((d, i) => d.classList.toggle("is-active", i === idx));
+
+      const s = slides[idx];
+      const name = s.dataset.name || "";
+      const stack = s.dataset.stack || "";
+      const blurb = s.dataset.blurb || "";
+      const url = s.dataset.url || "#";
+      const dom = s.dataset.domain || "";
+
+      nameEl.textContent = name;
+      stackEl.textContent = stack;
+      blurbEl.textContent = blurb;
+      visitEl.href = url;
+      visitTextEl.textContent = `Visit ${dom}`;
+      eyebrowEl.textContent = `${pad(idx + 1)} / ${pad(total)} · LIVE`;
+    };
+
+    const go = (delta: number) => {
+      lastDir = delta;
+      activeIndex = (activeIndex + delta + total) % total;
+      render(activeIndex, delta);
+    };
+
+    prev.addEventListener("click", () => go(-1));
+    next.addEventListener("click", () => go(1));
+    dots.forEach((dot, i) => {
+      dot.addEventListener("click", () => {
+        if (i === activeIndex) return;
+        const dir = i > activeIndex ? 1 : -1;
+        lastDir = dir;
+        activeIndex = i;
+        render(activeIndex, dir);
+      });
+    });
+
+    // Keyboard nav when stage focused
+    stage.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") { e.preventDefault(); go(-1); }
+      if (e.key === "ArrowRight") { e.preventDefault(); go(1); }
+    });
+  })();
+</script>

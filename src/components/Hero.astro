@@ -1,0 +1,26 @@
+---
+const bookingMonth = new Date()
+  .toLocaleString("en-US", { month: "long" })
+  .toUpperCase();
+---
+
+<section id="hero" class="long">
+  <div class="wrap">
+    <div class="avail"><span class="led" aria-hidden="true"></span> AVAILABLE · BOOKING {bookingMonth}</div>
+    <h1>Senior dev. Two-week typical delivery. Fixed price.</h1>
+    <p class="sub">
+      One active project at a time, scoped against a written SOW and priced by outcome.
+      Right now: a nonprofit donation platform replacing three tools the org was paying separately for.
+    </p>
+    <div class="cta">
+      <a class="btn" href="#contact">Start a project <span class="arr">→</span></a>
+      <a class="btn ghost" href="#work">See work <span class="arr">→</span></a>
+    </div>
+    <div class="strap">
+      <div><div class="k">Delivery</div><div class="v">2 weeks</div></div>
+      <div><div class="k">Pricing</div><div class="v">from $2,500</div></div>
+      <div><div class="k">Stack</div><div class="v">Astro · Next · Shopify</div></div>
+      <div><div class="k">Posture</div><div class="v">One active project</div></div>
+    </div>
+  </div>
+</section>
