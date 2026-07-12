@@ -219,7 +219,10 @@
           );
         } else {
           setStatus('OAuth return — resuming Plaid Link…', 'info');
-          launchPlaid(token, window.location.href);
+          // CF Pages 308-redirects /plaid-oauth.html → /plaid-oauth, so location.href loses
+          // the .html extension; reconstruct from the registered URI to avoid Plaid rejection.
+          var receivedRedirectUri = 'https://gr8gray.dev/plaid-oauth.html' + window.location.search;
+          launchPlaid(token, receivedRedirectUri);
         }
       } else {
         // Role A — link launcher (token in fragment)
