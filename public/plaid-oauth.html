@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plaid Link — finance-watcher</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0d1117;
+      color: #c9d1d9;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    #app { max-width: 640px; width: 100%; }
+    h1 { font-size: 1.25rem; font-weight: 600; color: #e6edf3; margin-bottom: 0.5rem; }
+    .status {
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+    }
+    .info    { background: #161b22; border: 1px solid #30363d; color: #8b949e; }
+    .error   { background: #1c0e10; border: 1px solid #6e2030; color: #f97583; }
+    .success { background: #0d1f17; border: 1px solid #1a7f40; color: #3fb950; }
+    .result-block {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .block-label {
+      display: block;
+      font-size: 0.75rem;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+    }
+    .token-code {
+      display: block;
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 4px;
+      padding: 0.6rem 0.8rem;
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.82rem;
+      color: #79c0ff;
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
+    .copy-btn {
+      margin-top: 0.6rem;
+      padding: 0.4rem 0.9rem;
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 4px;
+      color: #c9d1d9;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .copy-btn:hover { background: #30363d; }
+    .copy-btn.copied { color: #3fb950; border-color: #1a7f40; }
+    .cli-hint {
+      margin-top: 1rem;
+      font-size: 0.82rem;
+      color: #8b949e;
+      line-height: 1.6;
+    }
+    .cli-code {
+      display: block;
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 4px;
+      padding: 0.5rem 0.8rem;
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.82rem;
+      color: #d2a8ff;
+      word-break: break-all;
+      white-space: pre-wrap;
+      margin-top: 0.4rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h1>finance-watcher / Plaid Link</h1>
+    <div id="status" class="status info">Initializing…</div>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    (function () {
+      var statusEl = document.getElementById('status');
+      var resultEl = document.getElementById('result');
+
+      function setStatus(msg, type) {
+        statusEl.className = 'status ' + (type || 'info');
+        statusEl.textContent = msg;
+      }
+
+      function showResult(publicToken, institutionName) {
+        resultEl.textContent = '';
+
+        // Institution block
+        var instBlock = document.createElement('div');
+        instBlock.className = 'result-block';
+        var instLabel = document.createElement('span');
+        instLabel.className = 'block-label';
+        instLabel.textContent = 'Institution';
+        var instCode = document.createElement('code');
+        instCode.className = 'token-code';
+        instCode.textContent = institutionName || 'unknown';
+        instBlock.appendChild(instLabel);
+        instBlock.appendChild(instCode);
+        resultEl.appendChild(instBlock);
+
+        // Token block
+        var tokenBlock = document.createElement('div');
+        tokenBlock.className = 'result-block';
+        var tokenLabel = document.createElement('span');
+        tokenLabel.className = 'block-label';
+        tokenLabel.textContent = 'Public Token';
+        var tokenCode = document.createElement('code');
+        tokenCode.className = 'token-code';
+        tokenCode.textContent = publicToken;
+        var copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-btn';
+        copyBtn.type = 'button';
+        copyBtn.textContent = 'Copy token';
+        copyBtn.addEventListener('click', function () {
+          navigator.clipboard.writeText(publicToken).then(function () {
+            copyBtn.textContent = 'Copied!';
+            copyBtn.classList.add('copied');
+            setTimeout(function () {
+              copyBtn.textContent = 'Copy token';
+              copyBtn.classList.remove('copied');
+            }, 2000);
+          }).catch(function () {
+            copyBtn.textContent = 'Copy failed — select manually';
+          });
+        });
+        tokenBlock.appendChild(tokenLabel);
+        tokenBlock.appendChild(tokenCode);
+        tokenBlock.appendChild(copyBtn);
+        resultEl.appendChild(tokenBlock);
+
+        // CLI hint
+        var hint = document.createElement('div');
+        hint.className = 'cli-hint';
+        hint.textContent = 'Exchange this token in finance-watcher:';
+        var cliCode = document.createElement('code');
+        cliCode.className = 'cli-code';
+        cliCode.textContent = 'python -m finance_watcher link-exchange ' + publicToken;
+        hint.appendChild(cliCode);
+        resultEl.appendChild(hint);
+      }
+
+      function onSuccess(publicToken, metadata) {
+        console.log('[plaid-oauth] onSuccess metadata:', metadata);
+        localStorage.removeItem('plaid_link_token');
+        var inst = (metadata && metadata.institution && metadata.institution.name) || '';
+        setStatus('Link successful!', 'success');
+        showResult(publicToken, inst);
+      }
+
+      function onExit(err) {
+        if (err) {
+          var msg = err.display_message || err.error_code || JSON.stringify(err);
+          setStatus('Plaid Link exited: ' + msg, 'error');
+          console.warn('[plaid-oauth] onExit error:', err);
+        } else {
+          setStatus('Plaid Link closed.', 'info');
+        }
+      }
+
+      function launchPlaid(token, receivedRedirectUri) {
+        setStatus('Loading Plaid Link…', 'info');
+        var script = document.createElement('script');
+        script.src = 'https://cdn.plaid.com/link/v2/stable/link-initialize.js';
+        script.onload = function () {
+          var config = {
+            token: token,
+            onSuccess: onSuccess,
+            onExit: onExit,
+          };
+          if (receivedRedirectUri) {
+            config.receivedRedirectUri = receivedRedirectUri;
+          }
+          /* global Plaid */
+          var handler = Plaid.create(config);
+          handler.open();
+          setStatus('Plaid Link opened — complete in the popup.', 'info');
+        };
+        script.onerror = function () {
+          setStatus('Failed to load Plaid Link SDK. Check network / ad-blocker.', 'error');
+        };
+        document.head.appendChild(script);
+      }
+
+      // Determine role
+      var params = new URLSearchParams(window.location.search);
+      var oauthStateId = params.get('oauth_state_id');
+
+      if (oauthStateId) {
+        // Role B — OAuth return
+        var token = localStorage.getItem('plaid_link_token');
+        if (!token) {
+          setStatus(
+            'OAuth return detected but no link token found. ' +
+            'Restart from the CLI: generate a fresh link token and open the URL it provides.',
+            'error'
+          );
+        } else {
+          setStatus('OAuth return — resuming Plaid Link…', 'info');
+          launchPlaid(token, window.location.href);
+        }
+      } else {
+        // Role A — link launcher (token in fragment)
+        var fragment = window.location.hash.replace(/^#/, '');
+        var fragParams = new URLSearchParams(fragment);
+        var linkToken = fragParams.get('link_token');
+
+        if (linkToken) {
+          localStorage.setItem('plaid_link_token', linkToken);
+          launchPlaid(linkToken, null);
+        } else {
+          setStatus(
+            'No link_token found. Open this page as: ' +
+            window.location.origin + '/plaid-oauth.html#link_token=<your-token>',
+            'error'
+          );
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
