@@ -1,4 +1,9 @@
 ---
+// Decorative scroll-reactive bust background. Trap: the `slug` values are the
+// other half of the data-figure contract with ProductEngineering.astro's
+// figure entries — the is:inline script below matches them at scroll time.
+// The script is is:inline (emitted verbatim into the HTML), so it stays ES5-ish
+// and unbundled on purpose; don't add imports to it.
 const busts = [
   { slug: "pythagoras", name: "Pythagoras", src: "/pantheon/pythagoras.png" },
   { slug: "athena", name: "Athena", src: "/pantheon/athena.png" },

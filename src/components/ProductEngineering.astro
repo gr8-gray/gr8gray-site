@@ -1,4 +1,10 @@
 ---
+// The four-figures pitch block. Trap: each entry's `figure` slug must match a
+// bust slug in PantheonBackground.astro — its scroll handler reads
+// data-figure off these .figure-block divs to decide which bust to show.
+// Renaming a slug here without the matching bust kills the background swap.
+import { SECTION_IDS } from "../data/site";
+
 const figures = [
   {
     id: "figure-pythagoras",
@@ -63,7 +69,7 @@ const figures = [
 ];
 ---
 
-<section id="pantheon" class="long">
+<section id={SECTION_IDS.pantheon} class="long">
   <div class="wrap">
     <div class="pantheon-intro">
       <div class="eyebrow">02<span class="sep">·</span>PRODUCT ENGINEERING</div>

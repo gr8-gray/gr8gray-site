@@ -1,5 +1,6 @@
 ---
 import { about } from "../data/about";
+import { SECTION_IDS, SITE_DOMAIN } from "../data/site";
 
 const steps = [
   {
@@ -30,7 +31,7 @@ const steps = [
 ];
 ---
 
-<section id="how" class="long">
+<section id={SECTION_IDS.how} class="long">
   <div class="wrap">
     <div class="eyebrow">03<span class="sep">·</span>HOW I WORK</div>
     <h2>Process — five steps, no surprises.</h2>
@@ -40,7 +41,7 @@ const steps = [
         <img src="/eric.jpg" alt="Eric Gray" class="bio-portrait" width="96" height="96" loading="lazy" />
         <figcaption>
           <span class="bio-name">ERIC GRAY</span>
-          <span class="bio-role">Senior dev · gr8gray.dev</span>
+          <span class="bio-role">Senior dev · {SITE_DOMAIN}</span>
         </figcaption>
       </figure>
       {about.paragraphs.slice(1).map((p) => <p>{p}</p>)}

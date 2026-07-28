@@ -7,13 +7,14 @@ import PantheonBackground from "../components/PantheonBackground.astro";
 import About from "../components/About.astro";
 import Contact from "../components/Contact.astro";
 import Footer from "../components/Footer.astro";
+import { SITE_DOMAIN } from "../data/site";
 ---
 
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Eric Gray · gr8gray.dev · Senior dev, two-week delivery, fixed price</title>
+    <title>{`Eric Gray · ${SITE_DOMAIN} · Senior dev, two-week delivery, fixed price`}</title>
     <meta
       name="description"
       content="Senior dev. Two-week typical delivery. Fixed price. One active project at a time, scoped against a written SOW."
