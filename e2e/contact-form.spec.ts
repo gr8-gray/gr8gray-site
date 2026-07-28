@@ -1,0 +1,87 @@
+import { test, expect } from "@playwright/test";
+
+// Customer path, step 2: the teaser form — the entire point of the site.
+// These specs verify the form's contract with gr8gray-forms WITHOUT ever
+// submitting: an accepted POST emails Eric a real lead notification.
+
+// Field contract mirrored from gr8gray-forms/src/index.ts validate().
+// If this list drifts from the worker, submissions 400 in production.
+const REQUIRED_FIELDS = [
+  "name_email",
+  "one_liner",
+  "success_metric",
+  "deadline",
+  "budget",
+  "examples",
+] as const;
+
+test.describe("teaser form", () => {
+  test.beforeEach(async ({ page }) => {
+    // Hard guardrail: no request may ever reach the forms worker from these
+    // tests, even if a spec bug bypasses client-side validation.
+    await page.route("**/teaser", (route) => route.abort());
+    // domcontentloaded, not load — see home.spec.ts.
+    await page.goto("/#contact", { waitUntil: "domcontentloaded" });
+  });
+
+  test("renders with the full field contract", async ({ page }) => {
+    const form = page.locator("form#teaser-form");
+    await expect(form).toBeVisible();
+
+    for (const name of REQUIRED_FIELDS) {
+      const field = form.locator(`[name="${name}"]`);
+      await expect(field, `field ${name}`).toBeVisible();
+      // Every field is required — the worker rejects blanks, so the browser
+      // must catch them first.
+      await expect(field).toHaveAttribute("required", "");
+    }
+
+    // Enum options must match the worker's allowlists exactly.
+    const budgetValues = await form
+      .locator('select[name="budget"] option')
+      .evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value).filter(Boolean));
+    expect(budgetValues.sort()).toEqual(
+      ["lt2k", "2to5k", "5to10k", "10to25k", "gt25k", "unsure"].sort(),
+    );
+    const deadlineValues = await form
+      .locator('select[name="deadline"] option')
+      .evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value).filter(Boolean));
+    expect(deadlineValues.sort()).toEqual(["hard", "soft", "flexible"].sort());
+
+    // Turnstile container must be present — without it the worker 403s
+    // every submission and the funnel is dead.
+    await expect(form.locator(".cf-turnstile")).toBeAttached();
+  });
+
+  test("client-side validation blocks an empty submit", async ({ page }) => {
+    const form = page.locator("form#teaser-form");
+
+    // Native constraint validation fires before the JS submit handler,
+    // so clicking with empty required fields must produce no network call.
+    await form.getByRole("button", { name: /submit/i }).click();
+
+    const validity = await form.evaluate((f) => {
+      const el = f as HTMLFormElement;
+      const firstInvalid = el.querySelector(":invalid") as HTMLInputElement | null;
+      return { valid: el.checkValidity(), firstInvalid: firstInvalid?.name ?? null };
+    });
+    expect(validity.valid).toBe(false);
+    expect(validity.firstInvalid).toBe("name_email");
+
+    // The JS handler never ran: status line stays empty (it would show
+    // SENDING…/ERROR if a request had been attempted).
+    await expect(page.locator("#form-status")).toHaveText("");
+  });
+
+  test("partially filled form still blocks submit", async ({ page }) => {
+    const form = page.locator("form#teaser-form");
+    await form.locator('[name="name_email"]').fill("Playwright Bot · noreply@example.com");
+    await form.locator('[name="one_liner"]').fill("E2E validation probe — not a lead");
+
+    await form.getByRole("button", { name: /submit/i }).click();
+
+    // Remaining required fields keep the form invalid; nothing was sent.
+    expect(await form.evaluate((f) => (f as HTMLFormElement).checkValidity())).toBe(false);
+    await expect(page.locator("#form-status")).toHaveText("");
+  });
+});

@@ -1,0 +1,27 @@
+name: E2E customer path
+# Read-only smoke of the live lead funnel. Weekly because the site rarely
+# changes but its dependencies (Turnstile script, fonts, forms worker CORS)
+# can break underneath it.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 14 * * 1'
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm' }
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Run E2E against production
+        run: npx playwright test
+        env:
+          E2E_BASE_URL: https://gr8gray.dev
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 14
