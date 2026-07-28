@@ -1,5 +1,10 @@
 ---
+// Portfolio carousel. Content lives in src/data/portfolio.ts — edit entries
+// there, never inline here. The inline <script> below mirrors each slide's
+// data-* attributes; if you add a data attribute, wire it in BOTH the markup
+// and the script's render() or the info panel silently shows stale text.
 import { portfolio } from "../data/portfolio";
+import { SECTION_IDS } from "../data/site";
 
 const pad = (n: number) => n.toString().padStart(2, "0");
 const domain = (url: string) => url.replace(/^https?:\/\//, "").replace(/\/$/, "");
@@ -7,7 +12,7 @@ const stackTag = (stack: string) => stack.replace(/\.$/, "").toUpperCase();
 const total = portfolio.length;
 ---
 
-<section id="work" class="long">
+<section id={SECTION_IDS.work} class="long">
   <div class="wrap">
     <div class="sechead">
       <div>

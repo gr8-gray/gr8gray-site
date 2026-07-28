@@ -4,16 +4,16 @@ import { test, expect } from "@playwright/test";
 // These specs verify the form's contract with gr8gray-forms WITHOUT ever
 // submitting: an accepted POST emails Eric a real lead notification.
 
-// Field contract mirrored from gr8gray-forms/src/index.ts validate().
-// If this list drifts from the worker, submissions 400 in production.
-const REQUIRED_FIELDS = [
-  "name_email",
-  "one_liner",
-  "success_metric",
-  "deadline",
-  "budget",
-  "examples",
-] as const;
+// Field contract comes from the repo's single source (src/lib/teaserContract.ts),
+// which mirrors gr8gray-forms/src/contract.ts. These specs assert the RENDERED
+// form matches it — if either side drifts, submissions 400 in production.
+import {
+  BUDGET_VALUES,
+  DEADLINE_VALUES,
+  TEASER_FIELD_NAMES,
+} from "../src/lib/teaserContract";
+
+const REQUIRED_FIELDS = TEASER_FIELD_NAMES;
 
 test.describe("teaser form", () => {
   test.beforeEach(async ({ page }) => {
@@ -40,13 +40,11 @@ test.describe("teaser form", () => {
     const budgetValues = await form
       .locator('select[name="budget"] option')
       .evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value).filter(Boolean));
-    expect(budgetValues.sort()).toEqual(
-      ["lt2k", "2to5k", "5to10k", "10to25k", "gt25k", "unsure"].sort(),
-    );
+    expect(budgetValues.sort()).toEqual([...BUDGET_VALUES].sort());
     const deadlineValues = await form
       .locator('select[name="deadline"] option')
       .evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value).filter(Boolean));
-    expect(deadlineValues.sort()).toEqual(["hard", "soft", "flexible"].sort());
+    expect(deadlineValues.sort()).toEqual([...DEADLINE_VALUES].sort());
 
     // Turnstile container must be present — without it the worker 403s
     // every submission and the funnel is dead.
