@@ -14,8 +14,8 @@ shipping from GitHub Actions. Order matters. Total time ~20 min.
 > gh auth refresh -s workflow -h github.com
 > # follow the one-time code prompt in the browser
 >
-> cd C:\Users\EricG\Documents\gr8gray-site  && git push
-> cd C:\Users\EricG\Documents\gr8gray-forms && git push
+> cd <path-to>/gr8gray-site  && git push
+> cd <path-to>/gr8gray-forms && git push
 > ```
 >
 > After that, the Actions tab on both repos will show the first (failing) run.
@@ -68,14 +68,14 @@ Repos:
 ## D. KV namespace + Worker secrets  (~3 min, terminal)
 
 ```bash
-cd C:\Users\EricG\Documents\gr8gray-forms
+cd <path-to>/gr8gray-forms
 
 npx wrangler kv namespace create FORM_LOG
 # Copy the returned `id = "..."` into wrangler.toml, replacing REPLACE_WITH_KV_ID.
 
 npx wrangler secret put BREVO_API_KEY         # paste xkeysib-... from step B
 npx wrangler secret put TURNSTILE_SECRET_KEY  # paste from step C
-npx wrangler secret put NOTIFY_TO             # your destination email (e.g. ericgray928@live.com)
+npx wrangler secret put NOTIFY_TO             # your destination email
 npx wrangler secret put NOTIFY_FROM           # noreply@gr8gray.dev  (must be on the verified Brevo domain)
 ```
 
@@ -146,7 +146,7 @@ Then:
 2. Check the inbox at `NOTIFY_TO` — email should arrive within seconds.
 3. Confirm the audit row landed in KV:
    ```bash
-   cd C:\Users\EricG\Documents\gr8gray-forms
+   cd <path-to>/gr8gray-forms
    npx wrangler kv key list --binding FORM_LOG --remote
    ```
 
